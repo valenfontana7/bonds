@@ -110,7 +110,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.bonds.seedDemoData();
-    this.syncViewportHeightDeferred();
+    this.pwa.syncViewportHeightDeferred();
     this.setupNotifications();
   }
 
