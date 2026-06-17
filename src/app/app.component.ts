@@ -38,8 +38,7 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
   `,
   styles: `
     .app-shell {
-      height: 100dvh;
-      height: -webkit-fill-available;
+      height: 100%;
       display: flex;
       flex-direction: column;
       max-width: 640px;
@@ -57,15 +56,11 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
     }
 
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      flex-shrink: 0;
       width: 100%;
-      max-width: 640px;
       display: flex;
       justify-content: space-around;
-      padding: 0.5rem 0 calc(0.5rem + var(--sab));
+      padding: 0.5rem 0 var(--sab);
       background: rgba(15, 17, 26, 0.92);
       backdrop-filter: blur(12px);
       border-top: 1px solid var(--border);

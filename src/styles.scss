@@ -18,10 +18,16 @@
   --sal: env(safe-area-inset-left, 0px);
 
   --page-gutter: 1rem;
-  --bottom-nav-inner: 4.25rem;
+  --bottom-nav-inner: 3.5rem;
   --bottom-nav-total: calc(var(--bottom-nav-inner) + var(--sab));
   --page-top: calc(var(--page-gutter) + var(--sat));
-  --page-bottom: var(--bottom-nav-total);
+  --page-bottom: var(--page-gutter);
+}
+
+app-root {
+  display: block;
+  height: 100dvh;
+  height: -webkit-fill-available;
 }
 
 html {
