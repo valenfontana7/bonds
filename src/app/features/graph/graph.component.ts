@@ -151,17 +151,12 @@ interface GraphLink {
     </section>
   `,
   styles: `
-    :host {
-      display: block;
-      height: 100%;
-    }
-
     .graph-page {
-      margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) calc(-1 * var(--bottom-nav-total));
-      height: calc(100% + var(--page-top) + var(--bottom-nav-total));
+      margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) calc(-1 * var(--page-bottom));
+      height: calc(100dvh - var(--bottom-nav-total));
+      min-height: 420px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     .canvas {
@@ -440,6 +435,10 @@ interface GraphLink {
     }
 
     @media (min-width: 768px) {
+      .graph-page {
+        height: calc(100dvh - var(--bottom-nav-total));
+      }
+
       .quick-actions {
         max-width: 360px;
         margin-left: auto;

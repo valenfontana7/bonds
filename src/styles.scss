@@ -11,37 +11,31 @@
   --text: #e2e8f0;
   --text-muted: #94a3b8;
 
-  /* Safe areas — env() en CSS; JS puede sobreescribir --sat/--sab en iOS PWA */
+  /* Safe areas (iOS notch / Dynamic Island / home indicator) */
   --sat: env(safe-area-inset-top, 0px);
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
 
   --page-gutter: 1rem;
-  --bottom-nav-inner: 3.5rem;
+  --bottom-nav-inner: 4.25rem;
   --bottom-nav-total: calc(var(--bottom-nav-inner) + var(--sab));
   --page-top: calc(var(--page-gutter) + var(--sat));
-  --page-bottom: var(--page-gutter);
-  --app-height: 100dvh;
-}
-
-app-root {
-  display: block;
-  height: var(--app-height);
-  background: var(--bg);
+  --page-bottom: var(--bottom-nav-total);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  height: var(--app-height);
-  background: var(--bg);
+  height: 100%;
+  height: -webkit-fill-available;
 }
 
 body {
   margin: 0;
-  height: var(--app-height);
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow: hidden;
-  background: var(--bg);
   font-family:
     system-ui,
     -apple-system,

@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BondsService } from './core/services/bonds.service';
 import { NotificationService } from './core/services/notification.service';
-import { PwaService } from './core/services/pwa.service';
 import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component';
 
 @Component({
@@ -16,67 +15,59 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
       <main class="content">
         <router-outlet />
       </main>
-    </div>
 
-    <nav class="bottom-nav" aria-label="Navegación principal">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <span class="nav-icon">◉</span>
-        <span>Red</span>
-      </a>
-      <a routerLink="/personas" routerLinkActive="active">
-        <span class="nav-icon">♡</span>
-        <span>Personas</span>
-      </a>
-      <a routerLink="/semana" routerLinkActive="active">
-        <span class="nav-icon">✦</span>
-        <span>Semana</span>
-      </a>
-      <a routerLink="/ajustes" routerLinkActive="active">
-        <span class="nav-icon">⚙</span>
-        <span>Ajustes</span>
-      </a>
-    </nav>
+      <nav class="bottom-nav" aria-label="Navegación principal">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <span class="nav-icon">◉</span>
+          <span>Red</span>
+        </a>
+        <a routerLink="/personas" routerLinkActive="active">
+          <span class="nav-icon">♡</span>
+          <span>Personas</span>
+        </a>
+        <a routerLink="/semana" routerLinkActive="active">
+          <span class="nav-icon">✦</span>
+          <span>Semana</span>
+        </a>
+        <a routerLink="/ajustes" routerLinkActive="active">
+          <span class="nav-icon">⚙</span>
+          <span>Ajustes</span>
+        </a>
+      </nav>
+    </div>
   `,
   styles: `
-    :host {
-      display: block;
-    }
-
     .app-shell {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: var(--app-height);
-      width: min(100%, 640px);
-      margin-inline: auto;
+      height: 100dvh;
+      height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
+      max-width: 640px;
+      margin: 0 auto;
       background: var(--bg);
       overflow: hidden;
     }
 
     .content {
-      flex: 1 1 auto;
+      flex: 1;
       min-height: 0;
-      padding: var(--page-top) var(--page-gutter) var(--bottom-nav-total);
-      overflow-x: hidden;
+      padding: var(--page-top) var(--page-gutter) var(--page-bottom);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
     .bottom-nav {
       position: fixed;
-      /* iOS: el viewport termina antes del borde físico; extender el fondo */
-      bottom: calc(-1 * var(--sab));
-      left: 0;
-      right: 0;
-      width: min(100%, 640px);
-      margin-inline: auto;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 640px;
       display: flex;
       justify-content: space-around;
       padding: 0.5rem 0 calc(0.5rem + var(--sab));
-      background: var(--bg);
+      background: rgba(15, 17, 26, 0.92);
+      backdrop-filter: blur(12px);
       border-top: 1px solid var(--border);
       z-index: 100;
 
@@ -107,11 +98,9 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
 export class AppComponent implements OnInit {
   private readonly bonds = inject(BondsService);
   private readonly notifications = inject(NotificationService);
-  private readonly pwa = inject(PwaService);
 
   ngOnInit(): void {
     this.bonds.seedDemoData();
-    this.pwa.syncViewportMetricsDeferred();
     this.setupNotifications();
   }
 
