@@ -37,6 +37,11 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
     </div>
   `,
   styles: `
+    :host {
+      display: block;
+      height: 100%;
+    }
+
     .app-shell {
       height: 100%;
       display: flex;
@@ -48,15 +53,16 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
     }
 
     .content {
-      flex: 1;
+      flex: 1 1 auto;
       min-height: 0;
       padding: var(--page-top) var(--page-gutter) var(--page-bottom);
+      overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
     .bottom-nav {
-      flex-shrink: 0;
+      flex: 0 0 auto;
       width: 100%;
       display: flex;
       justify-content: space-around;
