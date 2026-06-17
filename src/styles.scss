@@ -11,7 +11,7 @@
   --text: #e2e8f0;
   --text-muted: #94a3b8;
 
-  /* Safe areas (iOS notch / Dynamic Island / home indicator) */
+  /* Safe areas — env() en CSS; JS puede sobreescribir --sat/--sab en iOS PWA */
   --sat: env(safe-area-inset-top, 0px);
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);

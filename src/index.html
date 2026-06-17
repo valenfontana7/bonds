@@ -24,6 +24,11 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="manifest" href="manifest.webmanifest">
+  <script>
+    (function () {
+      document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

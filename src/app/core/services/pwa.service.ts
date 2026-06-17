@@ -22,9 +22,10 @@ export class PwaService {
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
 
   constructor(private readonly swUpdate: SwUpdate) {
-    this.syncViewportHeightDeferred();
-    window.addEventListener('resize', () => this.syncViewportHeightDeferred());
-    window.addEventListener('orientationchange', () => this.syncViewportHeight());
+    this.syncViewportMetricsDeferred();
+    window.addEventListener('resize', () => this.syncViewportMetricsDeferred());
+    window.addEventListener('orientationchange', () => this.syncViewportMetricsDeferred());
+    window.visualViewport?.addEventListener('resize', () => this.syncViewportMetricsDeferred());
 
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
@@ -36,6 +37,7 @@ export class PwaService {
       this.deferredPrompt = null;
       this.canInstall.set(false);
       this.isStandalone.set(true);
+      this.syncViewportMetricsDeferred();
     });
 
     if (this.swUpdate.isEnabled) {
@@ -66,23 +68,60 @@ export class PwaService {
     localStorage.setItem('bonds.install.dismissed', Date.now().toString());
   }
 
+  /** iOS PWA: sincroniza altura real y safe areas (env() falla en standalone). */
+  syncViewportMetrics(): void {
+    const root = document.documentElement;
+    root.style.setProperty('--app-height', `${window.innerHeight}px`);
+
+    const sat = this.readSafeAreaInset('top');
+    let sab = this.readSafeAreaInset('bottom');
+    const sar = this.readSafeAreaInset('right');
+    const sal = this.readSafeAreaInset('left');
+
+    if (this.isIos() && this.isStandalone() && sab === 0) {
+      sab = 34;
+    }
+
+    root.style.setProperty('--sat', `${sat}px`);
+    root.style.setProperty('--sab', `${sab}px`);
+    root.style.setProperty('--sar', `${sar}px`);
+    root.style.setProperty('--sal', `${sal}px`);
+  }
+
+  syncViewportMetricsDeferred(): void {
+    this.syncViewportMetrics();
+    requestAnimationFrame(() => this.syncViewportMetrics());
+    setTimeout(() => this.syncViewportMetrics(), 150);
+    setTimeout(() => this.syncViewportMetrics(), 500);
+  }
+
+  private readSafeAreaInset(side: 'top' | 'bottom' | 'left' | 'right'): number {
+    if (!document.body) return 0;
+
+    const probe = document.createElement('div');
+    probe.style.cssText = [
+      'position:fixed',
+      'visibility:hidden',
+      'pointer-events:none',
+      `padding-${side}:env(safe-area-inset-${side})`,
+    ].join(';');
+    document.body.appendChild(probe);
+    const value = parseFloat(getComputedStyle(probe).getPropertyValue(`padding-${side}`)) || 0;
+    probe.remove();
+    return value;
+  }
+
+  private isIos(): boolean {
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }
+
   private detectStandalone(): boolean {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
       ('standalone' in navigator && (navigator as Navigator & { standalone?: boolean }).standalone === true)
     );
-  }
-
-  /** iOS PWA: 100dvh/inset no alcanzan el borde físico; usar innerHeight real. */
-  syncViewportHeight(): void {
-    const height = window.innerHeight;
-    document.documentElement.style.setProperty('--app-height', `${height}px`);
-  }
-
-  /** iOS puede reportar innerHeight incorrecto en el primer frame. */
-  syncViewportHeightDeferred(): void {
-    this.syncViewportHeight();
-    requestAnimationFrame(() => this.syncViewportHeight());
-    setTimeout(() => this.syncViewportHeight(), 150);
   }
 }

@@ -67,14 +67,15 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
 
     .bottom-nav {
       position: fixed;
-      bottom: 0;
+      /* iOS: el viewport termina antes del borde físico; extender el fondo */
+      bottom: calc(-1 * var(--sab));
       left: 0;
       right: 0;
       width: min(100%, 640px);
       margin-inline: auto;
       display: flex;
       justify-content: space-around;
-      padding: 0.5rem 0 var(--sab);
+      padding: 0.5rem 0 calc(0.5rem + var(--sab));
       background: var(--bg);
       border-top: 1px solid var(--border);
       z-index: 100;
@@ -110,7 +111,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.bonds.seedDemoData();
-    this.pwa.syncViewportHeightDeferred();
+    this.pwa.syncViewportMetricsDeferred();
     this.setupNotifications();
   }
 
