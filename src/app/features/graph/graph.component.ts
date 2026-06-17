@@ -157,8 +157,8 @@ interface GraphLink {
     }
 
     .graph-page {
-      margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) calc(-1 * var(--page-bottom));
-      height: calc(100% + var(--page-top) + var(--page-bottom));
+      margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) calc(-1 * var(--bottom-nav-total));
+      height: calc(100% + var(--page-top) + var(--bottom-nav-total));
       display: flex;
       flex-direction: column;
       overflow: hidden;

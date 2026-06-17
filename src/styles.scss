@@ -22,19 +22,24 @@
   --bottom-nav-total: calc(var(--bottom-nav-inner) + var(--sab));
   --page-top: calc(var(--page-gutter) + var(--sat));
   --page-bottom: var(--page-gutter);
+  --app-height: 100dvh;
 }
 
 app-root {
   display: block;
+  height: var(--app-height);
+  background: var(--bg);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  height: var(--app-height);
   background: var(--bg);
 }
 
 body {
   margin: 0;
+  height: var(--app-height);
   overflow: hidden;
   background: var(--bg);
   font-family:

@@ -22,6 +22,10 @@ export class PwaService {
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
 
   constructor(private readonly swUpdate: SwUpdate) {
+    this.syncViewportHeightDeferred();
+    window.addEventListener('resize', () => this.syncViewportHeightDeferred());
+    window.addEventListener('orientationchange', () => this.syncViewportHeight());
+
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       this.deferredPrompt = event as BeforeInstallPromptEvent;
@@ -67,5 +71,18 @@ export class PwaService {
       window.matchMedia('(display-mode: standalone)').matches ||
       ('standalone' in navigator && (navigator as Navigator & { standalone?: boolean }).standalone === true)
     );
+  }
+
+  /** iOS PWA: 100dvh/inset no alcanzan el borde físico; usar innerHeight real. */
+  syncViewportHeight(): void {
+    const height = window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', `${height}px`);
+  }
+
+  /** iOS puede reportar innerHeight incorrecto en el primer frame. */
+  syncViewportHeightDeferred(): void {
+    this.syncViewportHeight();
+    requestAnimationFrame(() => this.syncViewportHeight());
+    setTimeout(() => this.syncViewportHeight(), 150);
   }
 }
