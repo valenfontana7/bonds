@@ -26,18 +26,17 @@
 
 app-root {
   display: block;
-  height: 100dvh;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  height: 100dvh;
+  background: var(--bg);
 }
 
 body {
   margin: 0;
-  height: 100dvh;
   overflow: hidden;
+  background: var(--bg);
   font-family:
     system-ui,
     -apple-system,

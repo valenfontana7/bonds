@@ -39,15 +39,15 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
   styles: `
     :host {
       display: block;
-      height: 100%;
     }
 
     .app-shell {
-      height: 100%;
+      position: fixed;
+      inset: 0;
+      width: min(100%, 640px);
+      margin-inline: auto;
       display: flex;
       flex-direction: column;
-      max-width: 640px;
-      margin: 0 auto;
       background: var(--bg);
       overflow: hidden;
     }
@@ -67,8 +67,7 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
       display: flex;
       justify-content: space-around;
       padding: 0.5rem 0 var(--sab);
-      background: rgba(15, 17, 26, 0.92);
-      backdrop-filter: blur(12px);
+      background: var(--bg);
       border-top: 1px solid var(--border);
       z-index: 100;
 
