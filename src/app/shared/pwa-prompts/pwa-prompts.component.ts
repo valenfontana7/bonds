@@ -47,11 +47,11 @@ import { PwaService } from '../../core/services/pwa.service';
     }
 
     .install {
-      bottom: calc(4.75rem + env(safe-area-inset-bottom));
+      bottom: calc(var(--bottom-nav-total) + 0.5rem);
     }
 
     .update {
-      top: calc(0.75rem + env(safe-area-inset-top));
+      top: calc(0.75rem + var(--sat));
     }
 
     .banner-text {

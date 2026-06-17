@@ -152,8 +152,8 @@ interface GraphLink {
   `,
   styles: `
     .graph-page {
-      margin: -1rem -1rem 0;
-      height: calc(100dvh - 4.75rem - env(safe-area-inset-bottom));
+      margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) calc(-1 * var(--page-bottom));
+      height: calc(100dvh - var(--bottom-nav-total));
       min-height: 420px;
       display: flex;
       flex-direction: column;
@@ -193,7 +193,7 @@ interface GraphLink {
       top: 0;
       left: 0;
       right: 0;
-      padding: 0.85rem 1rem;
+      padding: calc(0.85rem + var(--sat)) var(--page-gutter) 0.85rem;
       background: linear-gradient(
         180deg,
         rgba(15, 17, 26, 0.85) 0%,
@@ -221,7 +221,7 @@ interface GraphLink {
 
     .attention-rail {
       position: absolute;
-      top: 4.5rem;
+      top: calc(4.5rem + var(--sat));
       left: 0;
       right: 0;
       display: flex;
@@ -293,7 +293,7 @@ interface GraphLink {
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+      padding: 1rem var(--page-gutter) calc(1rem + var(--sab));
       background: rgba(26, 29, 46, 0.94);
       backdrop-filter: blur(16px);
       border-top: 1px solid var(--border);
@@ -399,7 +399,7 @@ interface GraphLink {
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 2rem 1.5rem;
+      padding: calc(2rem + var(--sat)) 1.5rem 2rem;
       gap: 0.5rem;
 
       h1 {
@@ -436,7 +436,7 @@ interface GraphLink {
 
     @media (min-width: 768px) {
       .graph-page {
-        height: calc(100dvh - 5rem);
+        height: calc(100dvh - var(--bottom-nav-total));
       }
 
       .quick-actions {

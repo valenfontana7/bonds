@@ -38,18 +38,22 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
   `,
   styles: `
     .app-shell {
-      min-height: 100dvh;
+      height: 100dvh;
+      height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
       max-width: 640px;
       margin: 0 auto;
       background: var(--bg);
+      overflow: hidden;
     }
 
     .content {
       flex: 1;
-      padding: 1rem 1rem 5.5rem;
+      min-height: 0;
+      padding: var(--page-top) var(--page-gutter) var(--page-bottom);
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .bottom-nav {
@@ -61,7 +65,7 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
       max-width: 640px;
       display: flex;
       justify-content: space-around;
-      padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      padding: 0.5rem 0 calc(0.5rem + var(--sab));
       background: rgba(15, 17, 26, 0.92);
       backdrop-filter: blur(12px);
       border-top: 1px solid var(--border);
