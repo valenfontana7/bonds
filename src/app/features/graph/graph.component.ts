@@ -101,71 +101,69 @@ interface GraphThemeColors {
         <div class="canvas" #graphContainer>
           <svg #graphSvg></svg>
 
-          <header class="overlay-header">
-            <div class="header-text">
-              <span class="eyebrow">Tu red</span>
-              <span class="stats">{{ headerStats() }}</span>
-            </div>
-            @if (showGraphSearch()) {
-              <div class="graph-search-wrap">
-                <input
-                  type="search"
-                  class="graph-search"
-                  placeholder="Buscar persona…"
-                  [value]="graphSearch()"
-                  (input)="graphSearch.set($any($event.target).value)"
-                  aria-label="Buscar en el grafo"
-                />
-                @if (graphSearch().trim() && graphSearchResults().length > 0) {
-                  <ul class="graph-search-results">
-                    @for (person of graphSearchResults(); track person.id) {
-                      <li>
-                        <button type="button" (click)="focusFromSearch(person.id)">
-                          {{ person.name }}
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                } @else if (graphSearch().trim()) {
-                  <p class="graph-search-empty">Sin coincidencias</p>
+          <div class="graph-top">
+            <header class="overlay-header">
+              <div class="header-text">
+                <span class="eyebrow">Tu red</span>
+                <span class="stats">{{ headerStats() }}</span>
+              </div>
+              @if (showGraphSearch()) {
+                <div class="graph-search-wrap">
+                  <input
+                    type="search"
+                    class="graph-search"
+                    placeholder="Buscar persona…"
+                    [value]="graphSearch()"
+                    (input)="graphSearch.set($any($event.target).value)"
+                    aria-label="Buscar en el grafo"
+                  />
+                  @if (graphSearch().trim() && graphSearchResults().length > 0) {
+                    <ul class="graph-search-results">
+                      @for (person of graphSearchResults(); track person.id) {
+                        <li>
+                          <button type="button" (click)="focusFromSearch(person.id)">
+                            {{ person.name }}
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  } @else if (graphSearch().trim()) {
+                    <p class="graph-search-empty">Sin coincidencias</p>
+                  }
+                </div>
+              }
+            </header>
+
+            @if (needsAttention().length > 0) {
+              <div class="attention-rail" aria-label="Personas que necesitan atención">
+                @for (person of needsAttention().slice(0, 5); track person.id) {
+                  <button
+                    type="button"
+                    class="attention-chip"
+                    [class]="person.status"
+                    (click)="focusPerson(person.id)"
+                  >
+                    {{ person.name }}
+                  </button>
                 }
               </div>
             }
-          </header>
 
-          @if (needsAttention().length > 0) {
-            <div
-              class="attention-rail"
-              [class.with-birthdays]="imminentBirthdays().length > 0"
-              aria-label="Personas que necesitan atención"
-            >
-              @for (person of needsAttention().slice(0, 5); track person.id) {
-                <button
-                  type="button"
-                  class="attention-chip"
-                  [class]="person.status"
-                  (click)="focusPerson(person.id)"
-                >
-                  {{ person.name }}
-                </button>
-              }
-            </div>
-          }
-
-          @if (imminentBirthdays().length > 0) {
-            <div class="birthday-rail" aria-label="Cumpleaños hoy o mañana">
-              @for (entry of imminentBirthdays(); track entry.person.id) {
-                <button
-                  type="button"
-                  class="birthday-chip"
-                  [class.imminent]="entry.daysUntil <= 0"
-                  (click)="focusPerson(entry.person.id)"
-                >
-                  🎂 {{ entry.person.name.split(' ')[0] }} · {{ formatBirthdayCountdown(entry.daysUntil) }}
-                </button>
-              }
-            </div>
-          }
+            @if (imminentBirthdays().length > 0) {
+              <div class="birthday-rail" aria-label="Cumpleaños hoy o mañana">
+                @for (entry of imminentBirthdays(); track entry.person.id) {
+                  <button
+                    type="button"
+                    class="birthday-chip"
+                    [class.imminent]="entry.daysUntil <= 0"
+                    (click)="focusPerson(entry.person.id)"
+                  >
+                    🎂 {{ entry.person.name.split(' ')[0] }} · {{ formatBirthdayCountdown(entry.daysUntil) }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
 
           <div class="zoom-controls" aria-label="Controles de zoom">
             <button type="button" (click)="zoomIn()" aria-label="Acercar">+</button>
@@ -426,17 +424,32 @@ interface GraphThemeColors {
       }
     }
 
-    .overlay-header {
+    .graph-top {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      padding: calc(0.85rem + var(--sat)) var(--page-gutter) 0.85rem;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: calc(0.85rem + var(--sat)) var(--page-gutter) 0.65rem;
       background: linear-gradient(
         180deg,
         var(--graph-overlay) 0%,
+        color-mix(in srgb, var(--graph-overlay) 55%, transparent) 72%,
         transparent 100%
       );
+      pointer-events: none;
+    }
+
+    .graph-top > * {
+      pointer-events: auto;
+    }
+
+    .overlay-header {
+      padding: 0;
+      background: none;
       pointer-events: none;
     }
 
@@ -460,6 +473,7 @@ interface GraphThemeColors {
     .graph-search-wrap {
       position: relative;
       margin-top: 0.65rem;
+      pointer-events: auto;
     }
 
     .graph-search {
@@ -509,13 +523,8 @@ interface GraphThemeColors {
     }
 
     .attention-rail {
-      position: absolute;
-      top: calc(4.5rem + var(--sat));
-      left: 0;
-      right: 0;
       display: flex;
       gap: 0.5rem;
-      padding: 0 1rem;
       overflow-x: auto;
       scrollbar-width: none;
       mask-image: linear-gradient(
@@ -526,23 +535,14 @@ interface GraphThemeColors {
         transparent
       );
 
-      &.with-birthdays {
-        top: calc(3.85rem + var(--sat));
-      }
-
       &::-webkit-scrollbar {
         display: none;
       }
     }
 
     .birthday-rail {
-      position: absolute;
-      top: calc(5.65rem + var(--sat));
-      left: 0;
-      right: 0;
       display: flex;
       gap: 0.5rem;
-      padding: 0 1rem;
       overflow-x: auto;
       scrollbar-width: none;
 
