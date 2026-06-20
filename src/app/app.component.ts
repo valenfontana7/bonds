@@ -1,5 +1,5 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { BondsService } from './core/services/bonds.service';
 import { NotificationService } from './core/services/notification.service';
@@ -18,7 +18,7 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
         <router-outlet />
       </main>
 
-      <nav class="bottom-nav" aria-label="Navegación principal">
+      <nav class="bottom-nav" aria-label="Navegación principal" [class.hidden]="!showNav()">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <span class="nav-icon">◉</span>
           <span>Red</span>
@@ -94,14 +94,24 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
         font-size: 1.2rem;
         line-height: 1;
       }
+
+      &.hidden {
+        display: none;
+      }
     }
   `,
 })
 export class AppComponent implements OnInit {
+  private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly bonds = inject(BondsService);
   private readonly sync = inject(SyncService);
   private readonly notifications = inject(NotificationService);
+
+  readonly showNav = () =>
+    this.auth.isLoggedIn() &&
+    this.bonds.isOnboardingComplete() &&
+    !this.router.url.startsWith('/bienvenida');
 
   constructor() {
     effect(() => {

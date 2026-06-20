@@ -13,8 +13,9 @@ import { BondsService } from './core/services/bonds.service';
 
 const welcomeGuard = () => {
   const bonds = inject(BondsService);
+  const auth = inject(AuthService);
   const router = inject(Router);
-  if (bonds.isOnboardingComplete()) {
+  if (bonds.isOnboardingComplete() && auth.isLoggedIn()) {
     return router.createUrlTree(['/']);
   }
   return true;
