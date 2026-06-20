@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const body = {
     redisReady: isRedisReady(),
     geminiReady: isGeminiConfigured(),
-    geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite',
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
   };
 
   if (req.method === 'HEAD') {

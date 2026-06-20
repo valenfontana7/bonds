@@ -24,7 +24,7 @@ PWA para cuidar tus relaciones. Cuenta + sync en la nube, importación inicial c
 | `PUBLIC_APP_URL` | `https://bonds-ten.vercel.app` |
 | `JWT_SECRET` | string aleatorio largo |
 | `GEMINI_API_KEY` | API key de Google AI Studio |
-| `GEMINI_MODEL` | `gemini-2.0-flash-lite` (o `gemini-2.5-flash-lite` si lo tenés) |
+| `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | `npm run server:vapid` |
 | `VAPID_SUBJECT` | `mailto:tu@email.com` |
 | `CRON_SECRET` | string aleatorio |
