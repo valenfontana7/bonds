@@ -73,6 +73,7 @@ export class PushApiService {
         deviceId: this.getDeviceId(),
         enabled: snapshot.enabled,
         needsAttention: snapshot.needsAttention,
+        upcomingBirthdays: snapshot.upcomingBirthdays ?? [],
         lastDigestDate: snapshot.lastDigestDate,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         digestHour: 9,

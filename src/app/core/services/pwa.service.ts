@@ -12,11 +12,13 @@ export class PwaService {
   readonly canInstall = signal(false);
   readonly isStandalone = signal(this.detectStandalone());
   readonly updateAvailable = signal(false);
+  readonly installDismissedAt = signal(this.readDismissedAt());
   readonly showInstallBanner = computed(() => {
     if (this.isStandalone() || !this.canInstall()) return false;
-    const dismissed = localStorage.getItem('bonds.install.dismissed');
+    if (this.updateAvailable()) return false;
+    const dismissed = this.installDismissedAt();
     if (!dismissed) return true;
-    return Date.now() - Number(dismissed) > 7 * 86_400_000;
+    return Date.now() - dismissed > 7 * 86_400_000;
   });
 
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
@@ -59,7 +61,16 @@ export class PwaService {
   }
 
   dismissInstall(): void {
-    localStorage.setItem('bonds.install.dismissed', Date.now().toString());
+    const now = Date.now();
+    localStorage.setItem('bonds.install.dismissed', now.toString());
+    this.installDismissedAt.set(now);
+  }
+
+  private readDismissedAt(): number | null {
+    const raw = localStorage.getItem('bonds.install.dismissed');
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
   }
 
   private detectStandalone(): boolean {

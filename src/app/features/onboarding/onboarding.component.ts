@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AiImportService } from '../../core/services/ai-import.service';
@@ -7,10 +7,9 @@ import { BondsService } from '../../core/services/bonds.service';
 import { SyncService } from '../../core/services/sync.service';
 import {
   CATEGORY_LABELS,
-  PersonCategory,
+  formatDaysSinceContact,
 } from '../../core/models/person.model';
-import { ImportedPersonDraft } from '../../core/models/imported-person.model';
-
+import { AiStatusResponse, ImportedPersonDraft } from '../../core/models/imported-person.model';
 type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
 
 @Component({
@@ -72,11 +71,20 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
         @case ('method') {
           <header>
             <p class="eyebrow">Paso 2 de 3</p>
-            <h1>Contanos tu red</h1>
-            <p class="lead">
-              Escribí un párrafo con las personas importantes y cómo suele ser el vínculo. La IA las organiza por vos.
-            </p>
+            <h1>{{ methodTitle() }}</h1>
+            <p class="lead">{{ methodLead() }}</p>
           </header>
+
+          @if (syncNotice()) {
+            <p class="sync-notice" [class.warn]="syncNoticeKind() === 'warn'">{{ syncNotice() }}</p>
+          }
+
+          @if (cloudPeopleCount() > 0) {
+            <div class="card cloud-ready">
+              <p class="ok-line">Ya tenés {{ cloudPeopleCount() }} persona{{ cloudPeopleCount() === 1 ? '' : 's' }} en la nube.</p>
+              <button type="button" class="btn-primary" (click)="skipToNetwork()">Ir a mi red</button>
+            </div>
+          }
 
           <div class="card choices">
             @if (aiAvailable()) {
@@ -84,15 +92,30 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
                 <strong>✦ Importar con IA</strong>
                 <span>Ideal: un párrafo libre sobre mamá, amigos, laburo…</span>
               </button>
+              <button type="button" class="choice secondary" (click)="goManual()">
+                <strong>♡ Agregar una por una</strong>
+                <span>Tutorial corto para tu primera persona</span>
+              </button>
             } @else {
-              <p class="warn">
-                La importación con IA no está disponible ahora. Podés cargar persona por persona con el tutorial.
-              </p>
+              <div class="ai-unavailable">
+                <p class="warn">{{ aiUnavailableReason() }}</p>
+                @if (aiStatusLoading) {
+                  <p class="hint">Comprobando disponibilidad…</p>
+                } @else {
+                  <button type="button" class="btn-secondary compact" (click)="retryAiStatus()">
+                    Reintentar IA
+                  </button>
+                }
+              </div>
+              <button type="button" class="choice recommended" (click)="goManual()">
+                <strong>♡ Empezar persona por persona</strong>
+                <span>Recomendado ahora — tutorial de 3 pasos</span>
+              </button>
+              <button type="button" class="choice secondary" (click)="goAddPerson()">
+                <strong>→ Ir directo a agregar</strong>
+                <span>Saltá el tutorial y cargá tu primera persona</span>
+              </button>
             }
-            <button type="button" class="choice secondary" (click)="goManual()">
-              <strong>♡ Agregar una por una</strong>
-              <span>Tutorial corto para tu primera persona</span>
-            </button>
           </div>
         }
 
@@ -131,7 +154,7 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
                 <strong>{{ person.name }}</strong>
                 <span>{{ categoryLabels[person.category] }} · cada {{ person.desiredFrequencyDays }} días</span>
                 @if (person.daysSinceLastContact != null) {
-                  <span class="meta">Último contacto hace {{ person.daysSinceLastContact }} días</span>
+                  <span class="meta">Último contacto {{ formatContactDays(person.daysSinceLastContact) }}</span>
                 }
               </li>
             }
@@ -177,7 +200,7 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
     .eyebrow {
       margin: 0;
       font-size: 0.75rem;
-      color: #a5b4fc;
+      color: var(--accent-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -237,6 +260,35 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
         border-color: var(--border);
         background: transparent;
       }
+
+      &.recommended {
+        border-color: rgba(52, 211, 153, 0.45);
+        background: rgba(52, 211, 153, 0.1);
+      }
+    }
+
+    .ai-unavailable {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding-bottom: 0.25rem;
+    }
+
+    .cloud-ready {
+      gap: 0.75rem;
+
+      .ok-line {
+        margin: 0;
+        color: var(--success);
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+    }
+
+    .btn-secondary.compact {
+      align-self: flex-start;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
     }
 
     .preview-list {
@@ -262,8 +314,23 @@ type Step = 'account' | 'method' | 'ai-input' | 'ai-preview' | 'manual';
       color: var(--text-muted);
     }
 
-    .error { margin: 0; color: #fca5a5; font-size: 0.85rem; }
+    .error { margin: 0; color: var(--sync-error-text); font-size: 0.85rem; }
     .warn { margin: 0; color: #fbbf24; font-size: 0.85rem; line-height: 1.45; }
+
+    .sync-notice {
+      margin: 0;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--success);
+      font-size: 0.85rem;
+      line-height: 1.45;
+
+      &.warn {
+        background: rgba(251, 191, 36, 0.12);
+        color: var(--warning);
+      }
+    }
   `,
 })
 export class OnboardingComponent implements OnInit {
@@ -275,8 +342,34 @@ export class OnboardingComponent implements OnInit {
 
   readonly step = signal<Step>('account');
   readonly aiAvailable = signal(false);
+  readonly aiStatus = signal<AiStatusResponse | null>(null);
+  readonly cloudPeopleCount = signal(0);
   readonly preview = signal<ImportedPersonDraft[]>([]);
   readonly categoryLabels = CATEGORY_LABELS;
+  readonly syncNotice = signal('');
+  readonly syncNoticeKind = signal<'ok' | 'warn'>('ok');
+  readonly formatContactDays = formatDaysSinceContact;
+
+  readonly methodTitle = computed(() =>
+    this.aiAvailable() ? 'Contanos tu red' : 'Armá tu red',
+  );
+
+  readonly methodLead = computed(() =>
+    this.aiAvailable()
+      ? 'Escribí un párrafo con las personas importantes y cómo suele ser el vínculo. La IA las organiza por vos.'
+      : 'La importación con IA no está disponible ahora. Podés sumar personas manualmente — lleva solo un minuto.',
+  );
+
+  readonly aiUnavailableReason = computed(() => {
+    const status = this.aiStatus();
+    if (!status) return 'No pudimos contactar al servidor. Revisá tu conexión o el API local.';
+    if (!status.redisReady && !status.geminiReady) {
+      return 'Falta configurar Redis y Gemini en el servidor.';
+    }
+    if (!status.redisReady) return 'Falta Redis en el servidor (sync en la nube).';
+    if (!status.geminiReady) return 'Falta la API key de Gemini en el servidor.';
+    return 'La importación con IA no está disponible ahora.';
+  });
 
   name = '';
   email = '';
@@ -286,12 +379,14 @@ export class OnboardingComponent implements OnInit {
   aiError = '';
   accountLoading = false;
   aiLoading = false;
+  aiStatusLoading = false;
   loginMode = false;
 
   ngOnInit(): void {
     if (this.auth.isLoggedIn()) {
       this.step.set('method');
       void this.loadAiStatus();
+      this.cloudPeopleCount.set(this.bonds.people().length);
     }
   }
 
@@ -304,8 +399,10 @@ export class OnboardingComponent implements OnInit {
       } else {
         await this.auth.register(this.email, this.password, this.name);
       }
-      await this.sync.mergeOnLogin();
+      const mergeResult = await this.sync.mergeOnLogin();
+      this.applySyncNotice(mergeResult);
       this.bonds.reloadFromStorage();
+      this.cloudPeopleCount.set(mergeResult.peopleCount);
       this.step.set('method');
       await this.loadAiStatus();
     } catch (error) {
@@ -360,8 +457,40 @@ export class OnboardingComponent implements OnInit {
     void this.router.navigateByUrl('/personas/nueva');
   }
 
+  skipToNetwork(): void {
+    this.bonds.markOnboardingComplete();
+    void this.router.navigateByUrl('/');
+  }
+
+  async retryAiStatus(): Promise<void> {
+    await this.loadAiStatus();
+  }
+
   private async loadAiStatus(): Promise<void> {
-    const status = await this.ai.getStatus();
-    this.aiAvailable.set(!!status?.geminiReady && !!status?.redisReady);
+    this.aiStatusLoading = true;
+    try {
+      const status = await this.ai.getStatus();
+      this.aiStatus.set(status);
+      this.aiAvailable.set(!!status?.geminiReady && !!status?.redisReady);
+    } finally {
+      this.aiStatusLoading = false;
+    }
+  }
+
+  private applySyncNotice(result: {
+    message?: string;
+    warning?: string;
+  }): void {
+    if (result.warning) {
+      this.syncNotice.set(result.warning);
+      this.syncNoticeKind.set('warn');
+      return;
+    }
+    if (result.message) {
+      this.syncNotice.set(result.message);
+      this.syncNoticeKind.set('ok');
+      return;
+    }
+    this.syncNotice.set('');
   }
 }

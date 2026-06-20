@@ -24,7 +24,7 @@ import { Component, Input } from '@angular/core';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: var(--accent-gradient);
       color: white;
       font-weight: 600;
       font-size: 0.85em;

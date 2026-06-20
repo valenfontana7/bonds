@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { deviceId, enabled, needsAttention, lastDigestDate, timezone, digestHour } =
+  const { deviceId, enabled, needsAttention, upcomingBirthdays, lastDigestDate, timezone, digestHour } =
     parseBody(req);
 
   if (!deviceId) {
@@ -24,6 +24,9 @@ export default async function handler(req, res) {
   await upsertSubscriber(deviceId, {
     enabled: enabled ?? existing.enabled,
     needsAttention: Array.isArray(needsAttention) ? needsAttention : existing.needsAttention,
+    upcomingBirthdays: Array.isArray(upcomingBirthdays)
+      ? upcomingBirthdays
+      : existing.upcomingBirthdays,
     lastDigestDate: lastDigestDate ?? existing.lastDigestDate,
     timezone: timezone || existing.timezone,
     digestHour: Number.isFinite(digestHour) ? digestHour : existing.digestHour,

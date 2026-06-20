@@ -4,7 +4,8 @@
   box-sizing: border-box;
 }
 
-:root {
+:root,
+[data-theme='dark'] {
   --bg: #0f111a;
   --surface: #1a1d2e;
   --border: rgba(255, 255, 255, 0.08);
@@ -22,6 +23,130 @@
   --bottom-nav-total: calc(var(--bottom-nav-inner) + var(--sab));
   --page-top: calc(var(--page-gutter) + var(--sat));
   --page-bottom: var(--bottom-nav-total);
+
+  --accent: #6366f1;
+  --accent-soft: #c7d2fe;
+  --accent-muted: #a5b4fc;
+  --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --success: #6ee7b7;
+  --warning: #fcd34d;
+
+  --graph-glow: rgba(99, 102, 241, 0.12);
+  --graph-overlay: rgba(15, 17, 26, 0.85);
+  --graph-chip-bg: rgba(26, 29, 46, 0.85);
+  --graph-controls-bg: rgba(26, 29, 46, 0.88);
+  --graph-sheet-bg: rgba(26, 29, 46, 0.94);
+  --graph-backdrop: rgba(0, 0, 0, 0.4);
+  --graph-zone-stroke: rgba(255, 255, 255, 0.08);
+  --graph-zone-label: rgba(148, 163, 184, 0.35);
+  --graph-selected: #a5b4fc;
+  --graph-self-stroke: #c7d2fe;
+  --graph-self-label: #e0e7ff;
+  --graph-dim-label: #64748b;
+  --graph-bright-label: #cbd5e1;
+  --graph-node-dim: #475569;
+  --graph-gradient-start: #818cf8;
+  --graph-gradient-end: #6366f1;
+
+  --nav-bg: rgba(15, 17, 26, 0.92);
+  --nav-active: #a5b4fc;
+  --sync-syncing-bg: rgba(99, 102, 241, 0.2);
+  --sync-syncing-text: #c7d2fe;
+  --sync-ok-bg: rgba(52, 211, 153, 0.15);
+  --sync-ok-text: #6ee7b7;
+  --sync-error-bg: rgba(248, 113, 113, 0.15);
+  --sync-error-text: #fca5a5;
+
+  --birthday: #fcd34d;
+  --birthday-bg: rgba(251, 191, 36, 0.08);
+  --birthday-border: rgba(251, 191, 36, 0.25);
+  --wa: #4ade80;
+  --wa-bg: rgba(37, 211, 102, 0.12);
+  --wa-border: rgba(37, 211, 102, 0.35);
+  --wa-text: #86efac;
+
+  --status-well-bg: rgba(52, 211, 153, 0.15);
+  --status-well-text: #6ee7b7;
+  --status-well-dot: #34d399;
+  --status-soon-bg: rgba(251, 191, 36, 0.15);
+  --status-soon-text: #fcd34d;
+  --status-soon-dot: #fbbf24;
+  --status-reconnect-bg: rgba(251, 146, 60, 0.15);
+  --status-reconnect-text: #fdba74;
+  --status-reconnect-dot: #fb923c;
+  --status-attention-bg: rgba(248, 113, 113, 0.15);
+  --status-attention-text: #fca5a5;
+  --status-attention-dot: #f87171;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+[data-theme='light'] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: rgba(15, 23, 42, 0.1);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  color-scheme: light;
+
+  --accent: #4f46e5;
+  --accent-soft: #4338ca;
+  --accent-muted: #6366f1;
+  --accent-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
+  --success: #059669;
+  --warning: #d97706;
+
+  --graph-glow: rgba(99, 102, 241, 0.18);
+  --graph-overlay: rgba(248, 250, 252, 0.92);
+  --graph-chip-bg: rgba(255, 255, 255, 0.94);
+  --graph-controls-bg: rgba(255, 255, 255, 0.96);
+  --graph-sheet-bg: rgba(255, 255, 255, 0.98);
+  --graph-backdrop: rgba(15, 23, 42, 0.28);
+  --graph-zone-stroke: rgba(15, 23, 42, 0.1);
+  --graph-zone-label: rgba(100, 116, 139, 0.55);
+  --graph-selected: #4f46e5;
+  --graph-self-stroke: #6366f1;
+  --graph-self-label: #312e81;
+  --graph-dim-label: #94a3b8;
+  --graph-bright-label: #334155;
+  --graph-node-dim: #94a3b8;
+  --graph-gradient-start: #818cf8;
+  --graph-gradient-end: #4f46e5;
+
+  --nav-bg: rgba(255, 255, 255, 0.94);
+  --nav-active: #4f46e5;
+  --sync-syncing-bg: rgba(99, 102, 241, 0.12);
+  --sync-syncing-text: #4338ca;
+  --sync-ok-bg: rgba(5, 150, 105, 0.12);
+  --sync-ok-text: #059669;
+  --sync-error-bg: rgba(220, 38, 38, 0.1);
+  --sync-error-text: #dc2626;
+
+  --birthday: #d97706;
+  --birthday-bg: rgba(217, 119, 6, 0.08);
+  --birthday-border: rgba(217, 119, 6, 0.22);
+  --wa: #059669;
+  --wa-bg: rgba(5, 150, 105, 0.1);
+  --wa-border: rgba(5, 150, 105, 0.28);
+  --wa-text: #047857;
+
+  --status-well-bg: rgba(5, 150, 105, 0.12);
+  --status-well-text: #059669;
+  --status-well-dot: #10b981;
+  --status-soon-bg: rgba(217, 119, 6, 0.12);
+  --status-soon-text: #d97706;
+  --status-soon-dot: #f59e0b;
+  --status-reconnect-bg: rgba(234, 88, 12, 0.12);
+  --status-reconnect-text: #ea580c;
+  --status-reconnect-dot: #f97316;
+  --status-attention-bg: rgba(220, 38, 38, 0.1);
+  --status-attention-text: #dc2626;
+  --status-attention-dot: #ef4444;
 }
 
 html {
@@ -82,7 +207,7 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--accent-gradient);
   color: white;
 }
 
@@ -93,13 +218,33 @@ body {
 }
 
 .btn-danger {
-  background: rgba(248, 113, 113, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: color-mix(in srgb, var(--sync-error-text) 15%, transparent);
+  color: var(--sync-error-text);
+  border: 1px solid color-mix(in srgb, var(--sync-error-text) 30%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media (min-width: 768px) {
-  body {
+  [data-theme='dark'] body {
     background: linear-gradient(180deg, #0a0c14 0%, #0f111a 20%);
+  }
+
+  [data-theme='light'] body {
+    background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 20%);
   }
 }

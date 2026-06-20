@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { PwaService } from '../../core/services/pwa.service';
+import { SyncService } from '../../core/services/sync.service';
 
 @Component({
   selector: 'app-pwa-prompts',
@@ -13,7 +14,12 @@ import { PwaService } from '../../core/services/pwa.service';
     }
 
     @if (pwa.showInstallBanner()) {
-      <div class="banner install" role="dialog" aria-label="Instalar Bonds">
+      <div
+        class="banner install"
+        role="dialog"
+        aria-label="Instalar Bonds"
+        [style.bottom]="installBottom()"
+      >
         <div class="banner-text">
           <strong>Instalar Bonds</strong>
           <span>Accedé rápido desde tu pantalla de inicio</span>
@@ -35,7 +41,7 @@ import { PwaService } from '../../core/services/pwa.service';
       padding: 0.85rem 1rem;
       border-radius: 1rem;
       border: 1px solid var(--border);
-      background: rgba(26, 29, 46, 0.96);
+      background: color-mix(in srgb, var(--surface) 96%, transparent);
       backdrop-filter: blur(12px);
       z-index: 200;
       display: flex;
@@ -79,7 +85,7 @@ import { PwaService } from '../../core/services/pwa.service';
       cursor: pointer;
 
       &.primary {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: var(--accent-gradient);
         border-color: transparent;
         color: white;
       }
@@ -88,6 +94,14 @@ import { PwaService } from '../../core/services/pwa.service';
 })
 export class PwaPromptsComponent {
   readonly pwa = inject(PwaService);
+  private readonly sync = inject(SyncService);
+
+  readonly installBottom = computed(() => {
+    const syncVisible = this.sync.indicator().status !== 'idle';
+    return syncVisible
+      ? 'calc(var(--bottom-nav-total) + 2rem)'
+      : 'calc(var(--bottom-nav-total) + 0.5rem)';
+  });
 
   async install(): Promise<void> {
     await this.pwa.install();

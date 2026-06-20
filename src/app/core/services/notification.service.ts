@@ -114,6 +114,13 @@ export class NotificationService {
         name: p.name,
         daysSinceContact: p.daysSinceContact,
       })),
+      upcomingBirthdays: this.bonds
+        .upcomingBirthdays()
+        .filter((entry) => entry.daysUntil <= 1)
+        .map((entry) => ({
+          name: entry.person.name,
+          daysUntil: entry.daysUntil,
+        })),
     };
 
     await this.writeSnapshot(snapshot);

@@ -12,4 +12,10 @@ export interface NotificationSnapshot {
   enabled: boolean;
   lastDigestDate: string | null;
   needsAttention: AttentionPersonSnapshot[];
+  upcomingBirthdays?: BirthdayPersonSnapshot[];
+}
+
+export interface BirthdayPersonSnapshot {
+  name: string;
+  daysUntil: number;
 }

@@ -5,7 +5,7 @@ import { ConnectionStatus } from '../../core/models/person.model';
   selector: 'app-status-badge',
   standalone: true,
   template: `
-    <span class="badge" [class]="status">
+    <span class="badge" [class]="status" role="status">
       <span class="dot" aria-hidden="true"></span>
       {{ label }}
     </span>
@@ -30,27 +30,27 @@ import { ConnectionStatus } from '../../core/models/person.model';
     }
 
     .well {
-      background: rgba(52, 211, 153, 0.15);
-      color: #6ee7b7;
-      .dot { background: #34d399; }
+      background: var(--status-well-bg);
+      color: var(--status-well-text);
+      .dot { background: var(--status-well-dot); }
     }
 
     .soon {
-      background: rgba(251, 191, 36, 0.15);
-      color: #fcd34d;
-      .dot { background: #fbbf24; }
+      background: var(--status-soon-bg);
+      color: var(--status-soon-text);
+      .dot { background: var(--status-soon-dot); }
     }
 
     .reconnect {
-      background: rgba(251, 146, 60, 0.15);
-      color: #fdba74;
-      .dot { background: #fb923c; }
+      background: var(--status-reconnect-bg);
+      color: var(--status-reconnect-text);
+      .dot { background: var(--status-reconnect-dot); }
     }
 
     .attention {
-      background: rgba(248, 113, 113, 0.15);
-      color: #fca5a5;
-      .dot { background: #f87171; }
+      background: var(--status-attention-bg);
+      color: var(--status-attention-text);
+      .dot { background: var(--status-attention-dot); }
     }
   `,
 })

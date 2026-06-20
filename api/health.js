@@ -1,5 +1,6 @@
 import { configureWebPush, getPublicAppUrl } from '../lib/push.js';
 import { isPersistentStoreReady } from '../lib/store.js';
+import { checkRedisWritable } from '../lib/redis.js';
 import { methodNotAllowed } from '../lib/http.js';
 
 configureWebPush(process.env);
@@ -10,10 +11,13 @@ export default async function handler(req, res) {
     return;
   }
 
+  const writeCheck = await checkRedisWritable();
   const body = {
     ok: true,
     pushReady: configureWebPush(process.env),
     storeReady: isPersistentStoreReady(),
+    storeWritable: writeCheck.ok,
+    ...(writeCheck.ok ? {} : { storeError: writeCheck.message ?? writeCheck.reason }),
     publicAppUrl: getPublicAppUrl(),
   };
 

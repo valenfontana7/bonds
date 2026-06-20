@@ -21,6 +21,8 @@ export default async function handler(req, res) {
     const token = signToken(user.id, user.email);
     res.status(200).json({ user, token });
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    const message = error.message || 'No se pudo iniciar sesión.';
+    const status = message.includes('incorrectos') ? 401 : 400;
+    res.status(status).json({ error: message });
   }
 }

@@ -53,13 +53,41 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function buildNotificationBody(people) {
-  const names = people.slice(0, 3).map((p) => p.name);
-  const extra = people.length > 3 ? ` y ${people.length - 3} más` : '';
-  if (people.length === 1) {
-    return `${people[0].name} hace ${people[0].daysSinceContact} días que no conectás. Un mensaje corto puede bastar.`;
+function buildNotificationBody(people, birthdays = []) {
+  const parts = [];
+
+  if (people?.length) {
+    const names = people.slice(0, 3).map((p) => p.name);
+    const extra = people.length > 3 ? ` y ${people.length - 3} más` : '';
+    if (people.length === 1) {
+      parts.push(
+        `${people[0].name} hace ${people[0].daysSinceContact} días que no conectás. Un mensaje corto puede bastar.`,
+      );
+    } else {
+      parts.push(`${names.join(', ')}${extra} — tu red pide un poco de atención.`);
+    }
   }
-  return `${names.join(', ')}${extra} — tu red pide un poco de atención.`;
+
+  const today = birthdays.filter((entry) => entry.daysUntil === 0);
+  const tomorrow = birthdays.filter((entry) => entry.daysUntil === 1);
+
+  if (today.length === 1) {
+    parts.push(`🎂 Hoy es el cumpleaños de ${today[0].name}.`);
+  } else if (today.length > 1) {
+    parts.push(`🎂 Hoy cumplen años ${today.map((entry) => entry.name).join(' y ')}.`);
+  }
+
+  if (tomorrow.length === 1) {
+    parts.push(`Mañana cumple años ${tomorrow[0].name}.`);
+  } else if (tomorrow.length > 1) {
+    parts.push(`Mañana cumplen años ${tomorrow.map((entry) => entry.name).join(' y ')}.`);
+  }
+
+  if (parts.length === 0) {
+    return 'Tu red te espera. Abrí Bonds para ver quién necesita un mensaje.';
+  }
+
+  return parts.join(' ');
 }
 
 async function updateBadge(count) {
@@ -77,13 +105,17 @@ async function checkAndNotify() {
   if (!snapshot) return;
 
   const count = snapshot.needsAttention?.length ?? 0;
+  const birthdays = snapshot.upcomingBirthdays ?? [];
+  const hasBirthdayAlert = birthdays.some((entry) => entry.daysUntil <= 1);
   await updateBadge(count);
 
-  if (!snapshot.enabled || count === 0) return;
+  if (!snapshot.enabled) return;
   if (snapshot.lastDigestDate === todayKey()) return;
+  if (count === 0 && !hasBirthdayAlert) return;
 
-  const body = buildNotificationBody(snapshot.needsAttention);
-  await self.registration.showNotification('Bonds — Tu red te espera', {
+  const body = buildNotificationBody(snapshot.needsAttention, birthdays);
+  const title = hasBirthdayAlert && count === 0 ? 'Bonds — Cumpleaños' : 'Bonds — Tu red te espera';
+  await self.registration.showNotification(title, {
     body,
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-96x96.png',
