@@ -1,9 +1,5 @@
-import {
-  configureWebPush,
-  getPublicAppUrl,
-  sendDigestToDevice,
-} from '../../../server/src/push.js';
-import { methodNotAllowed, parseBody } from '../../_lib/http.js';
+import { configureWebPush, getPublicAppUrl, sendDigestToDevice } from '../../lib/push.js';
+import { methodNotAllowed, parseBody } from '../../lib/http.js';
 
 configureWebPush(process.env);
 

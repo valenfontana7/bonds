@@ -1,5 +1,5 @@
-import { getSubscriber, upsertSubscriber } from '../../../server/src/store.js';
-import { methodNotAllowed, parseBody } from '../../_lib/http.js';
+import { getSubscriber, upsertSubscriber } from '../../lib/store.js';
+import { methodNotAllowed, parseBody } from '../../lib/http.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'PUT') {

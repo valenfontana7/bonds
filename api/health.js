@@ -1,9 +1,6 @@
-import {
-  configureWebPush,
-  getPublicAppUrl,
-} from '../../server/src/push.js';
-import { isPersistentStoreReady } from '../../server/src/store.js';
-import { methodNotAllowed } from '../_lib/http.js';
+import { configureWebPush, getPublicAppUrl } from '../lib/push.js';
+import { isPersistentStoreReady } from '../lib/store.js';
+import { methodNotAllowed } from '../lib/http.js';
 
 configureWebPush(process.env);
 

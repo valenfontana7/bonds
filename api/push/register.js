@@ -1,6 +1,6 @@
-import { configureWebPush } from '../../../server/src/push.js';
-import { removeSubscriber, upsertSubscriber } from '../../../server/src/store.js';
-import { methodNotAllowed, parseBody } from '../../_lib/http.js';
+import { configureWebPush } from '../../lib/push.js';
+import { removeSubscriber, upsertSubscriber } from '../../lib/store.js';
+import { methodNotAllowed, parseBody } from '../../lib/http.js';
 
 configureWebPush(process.env);
 

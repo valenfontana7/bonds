@@ -1,5 +1,5 @@
-import { configureWebPush, getPublicKey } from '../../server/src/push.js';
-import { methodNotAllowed } from '../_lib/http.js';
+import { configureWebPush, getPublicKey } from '../../lib/push.js';
+import { methodNotAllowed } from '../../lib/http.js';
 
 configureWebPush(process.env);
 

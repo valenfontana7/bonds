@@ -1,5 +1,5 @@
-import { configureWebPush, runScheduledDigests } from '../../server/src/push.js';
-import { authorizeCron, methodNotAllowed } from '../_lib/http.js';
+import { configureWebPush, runScheduledDigests } from '../../lib/push.js';
+import { authorizeCron, methodNotAllowed } from '../../lib/http.js';
 
 configureWebPush(process.env);
 

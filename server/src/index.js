@@ -11,8 +11,8 @@ import {
   getPublicKey,
   runScheduledDigests,
   sendDigestToDevice,
-} from './push.js';
-import { getSubscriber, isPersistentStoreReady, removeSubscriber, upsertSubscriber } from './store.js';
+} from '../../lib/push.js';
+import { getSubscriber, isPersistentStoreReady, removeSubscriber, upsertSubscriber } from '../../lib/store.js';
 
 dotenv.config();
 

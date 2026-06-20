@@ -1,17 +1,25 @@
 {
+  "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/bonds-app/browser",
+  "installCommand": "npm install",
   "framework": null,
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "lib/**",
+      "memory": 1024,
+      "maxDuration": 10
     }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "crons": [
     {
       "path": "/api/cron/digest",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }
