@@ -73,7 +73,7 @@ Si `storeReady` es `false`, falta conectar Upstash Redis.
 3. Abrí desde el ícono → **Ajustes** → activar recordatorios
 4. Tocá **Probar notificación ahora**
 
-El cron de Vercel llama `/api/cron/digest` cada 15 minutos y envía **como máximo un digest por día** por dispositivo.
+El cron de Vercel llama `/api/cron/digest` **una vez al día** (~17:00 UTC, compatible con plan Hobby) y envía **como máximo un digest por día** por dispositivo. En plan Pro podés cambiar el schedule en `vercel.json` a cada hora (`0 * * * *`) para avisos más precisos por zona horaria.
 
 ---
 
