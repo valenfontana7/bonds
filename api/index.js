@@ -12,6 +12,11 @@ export default async function handler(req, res) {
     service: 'bonds-push',
     endpoints: [
       '/api/health',
+      '/api/auth/register',
+      '/api/auth/login',
+      '/api/sync',
+      '/api/ai/import-network',
+      '/api/ai/status',
       '/api/push/vapid-public-key',
       '/api/push/register',
       '/api/push/snapshot',

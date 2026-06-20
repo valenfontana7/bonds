@@ -1,7 +1,9 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 import { BondsService } from './core/services/bonds.service';
 import { NotificationService } from './core/services/notification.service';
+import { SyncService } from './core/services/sync.service';
 import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component';
 
 @Component({
@@ -96,7 +98,9 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
   `,
 })
 export class AppComponent implements OnInit {
+  private readonly auth = inject(AuthService);
   private readonly bonds = inject(BondsService);
+  private readonly sync = inject(SyncService);
   private readonly notifications = inject(NotificationService);
 
   constructor() {
@@ -106,8 +110,11 @@ export class AppComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.bonds.seedDemoData();
+  async ngOnInit(): Promise<void> {
+    if (this.auth.isLoggedIn()) {
+      await this.sync.mergeOnLogin();
+      this.bonds.reloadFromStorage();
+    }
     this.setupNotifications();
     if (this.notifications.isEnabled()) {
       void this.notifications.setEnabled(true);

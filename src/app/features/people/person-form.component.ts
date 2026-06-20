@@ -214,7 +214,11 @@ export class PersonFormComponent {
         ...value,
         photo: this.photoPreview,
       });
-      this.router.navigate(['/personas', person.id]);
+      if (this.bonds.people().length === 1) {
+        this.router.navigate(['/']);
+      } else {
+        this.router.navigate(['/personas', person.id]);
+      }
     }
   }
 

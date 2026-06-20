@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   Interaction,
   InteractionType,
@@ -6,14 +6,21 @@ import {
   PersonCategory,
   PersonWithStatus,
 } from '../models/person.model';
+import { ImportedPersonDraft } from '../models/imported-person.model';
 import { RelationshipStatusService } from './relationship-status.service';
 import { StorageService } from './storage.service';
+import { SyncService } from './sync.service';
 
 const PEOPLE_KEY = 'bonds.people';
 const INTERACTIONS_KEY = 'bonds.interactions';
+const ONBOARDING_KEY = 'bonds.onboarding.completed';
 
 @Injectable({ providedIn: 'root' })
 export class BondsService {
+  private readonly storage = inject(StorageService);
+  private readonly statusService = inject(RelationshipStatusService);
+  private readonly sync = inject(SyncService);
+
   private readonly peopleSignal = signal<Person[]>([]);
   private readonly interactionsSignal = signal<Interaction[]>([]);
 
@@ -21,10 +28,7 @@ export class BondsService {
   readonly interactions = this.interactionsSignal.asReadonly();
 
   readonly peopleWithStatus = computed<PersonWithStatus[]>(() =>
-    this.statusService.enrichAll(
-      this.peopleSignal(),
-      this.interactionsSignal(),
-    ),
+    this.statusService.enrichAll(this.peopleSignal(), this.interactionsSignal()),
   );
 
   readonly needsAttention = computed(() =>
@@ -33,18 +37,59 @@ export class BondsService {
       .sort((a, b) => b.attentionRatio - a.attentionRatio),
   );
 
-  readonly weekConnections = computed(() =>
-    this.needsAttention().slice(0, 7),
-  );
+  readonly weekConnections = computed(() => this.needsAttention().slice(0, 7));
 
-  constructor(
-    private readonly storage: StorageService,
-    private readonly statusService: RelationshipStatusService,
-  ) {
+  constructor() {
+    this.reloadFromStorage();
+  }
+
+  isOnboardingComplete(): boolean {
+    return this.storage.get<boolean>(ONBOARDING_KEY, false) || this.peopleSignal().length > 0;
+  }
+
+  markOnboardingComplete(): void {
+    this.storage.set(ONBOARDING_KEY, true);
+  }
+
+  reloadFromStorage(): void {
     this.peopleSignal.set(this.storage.get<Person[]>(PEOPLE_KEY, []));
-    this.interactionsSignal.set(
-      this.storage.get<Interaction[]>(INTERACTIONS_KEY, []),
-    );
+    this.interactionsSignal.set(this.storage.get<Interaction[]>(INTERACTIONS_KEY, []));
+  }
+
+  importFromDrafts(drafts: ImportedPersonDraft[]): Person[] {
+    const people = [...this.peopleSignal()];
+    const interactions = [...this.interactionsSignal()];
+    const now = new Date();
+    const created: Person[] = [];
+
+    for (const draft of drafts) {
+      const person: Person = {
+        id: crypto.randomUUID(),
+        name: draft.name.trim(),
+        category: draft.category,
+        desiredFrequencyDays: draft.desiredFrequencyDays,
+        createdAt: now.toISOString(),
+      };
+      people.push(person);
+      created.push(person);
+
+      if (draft.daysSinceLastContact != null) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - draft.daysSinceLastContact);
+        interactions.push({
+          id: crypto.randomUUID(),
+          personId: person.id,
+          type: 'mensaje',
+          date: date.toISOString(),
+          note: draft.note,
+        });
+      }
+    }
+
+    this.persistPeople(people);
+    this.persistInteractions(interactions);
+    this.markOnboardingComplete();
+    return created;
   }
 
   addPerson(data: {
@@ -62,6 +107,9 @@ export class BondsService {
       createdAt: new Date().toISOString(),
     };
     this.persistPeople([...this.peopleSignal(), person]);
+    if (this.peopleSignal().length === 1) {
+      this.markOnboardingComplete();
+    }
     return person;
   }
 
@@ -75,9 +123,7 @@ export class BondsService {
 
   deletePerson(id: string): void {
     this.persistPeople(this.peopleSignal().filter((p) => p.id !== id));
-    this.persistInteractions(
-      this.interactionsSignal().filter((i) => i.personId !== id),
-    );
+    this.persistInteractions(this.interactionsSignal().filter((i) => i.personId !== id));
   }
 
   getPerson(id: string): PersonWithStatus | undefined {
@@ -107,60 +153,15 @@ export class BondsService {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  seedDemoData(): void {
-    if (this.peopleSignal().length > 0) return;
-
-    const demo: Array<{
-      name: string;
-      category: PersonCategory;
-      desiredFrequencyDays: number;
-      daysAgo: number;
-      type: InteractionType;
-    }> = [
-      { name: 'Mamá', category: 'familia', desiredFrequencyDays: 7, daysAgo: 5, type: 'llamada' },
-      { name: 'Papá', category: 'familia', desiredFrequencyDays: 10, daysAgo: 8, type: 'mensaje' },
-      { name: 'Abuela', category: 'familia', desiredFrequencyDays: 14, daysAgo: 15, type: 'llamada' },
-      { name: 'Sofía', category: 'amigos', desiredFrequencyDays: 21, daysAgo: 12, type: 'salida' },
-      { name: 'Juan', category: 'amigos', desiredFrequencyDays: 30, daysAgo: 74, type: 'mensaje' },
-      { name: 'Pablo', category: 'amigos', desiredFrequencyDays: 21, daysAgo: 18, type: 'videollamada' },
-      { name: 'Martín', category: 'trabajo', desiredFrequencyDays: 14, daysAgo: 3, type: 'mensaje' },
-    ];
-
-    const people: Person[] = [];
-    const interactions: Interaction[] = [];
-    const now = new Date();
-
-    for (const item of demo) {
-      const person: Person = {
-        id: crypto.randomUUID(),
-        name: item.name,
-        category: item.category,
-        desiredFrequencyDays: item.desiredFrequencyDays,
-        createdAt: new Date(now.getTime() - 180 * 86_400_000).toISOString(),
-      };
-      people.push(person);
-
-      const interactionDate = new Date(now);
-      interactionDate.setDate(interactionDate.getDate() - item.daysAgo);
-      interactions.push({
-        id: crypto.randomUUID(),
-        personId: person.id,
-        type: item.type,
-        date: interactionDate.toISOString(),
-      });
-    }
-
-    this.persistPeople(people);
-    this.persistInteractions(interactions);
-  }
-
   private persistPeople(people: Person[]): void {
     this.peopleSignal.set(people);
     this.storage.set(PEOPLE_KEY, people);
+    void this.sync.pushToCloud();
   }
 
   private persistInteractions(interactions: Interaction[]): void {
     this.interactionsSignal.set(interactions);
     this.storage.set(INTERACTIONS_KEY, interactions);
+    void this.sync.pushToCloud();
   }
 }

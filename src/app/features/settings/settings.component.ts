@@ -1,16 +1,35 @@
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
+import { SyncService } from '../../core/services/sync.service';
 import { PwaService } from '../../core/services/pwa.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <section class="settings-page">
       <header>
         <h1>Ajustes</h1>
         <p class="subtitle">App instalada en tu teléfono</p>
       </header>
+
+      <section class="card">
+        <h2>Tu cuenta</h2>
+        @if (auth.isLoggedIn()) {
+          <p class="desc ok-line">{{ auth.user()?.name }} · {{ auth.user()?.email }}</p>
+          <p class="desc">Tu red se sincroniza en la nube al hacer cambios.</p>
+          <button type="button" class="btn-secondary" [disabled]="syncing" (click)="syncNow()">
+            {{ syncing ? 'Sincronizando…' : 'Sincronizar ahora' }}
+          </button>
+          <button type="button" class="btn-danger" (click)="logout()">Cerrar sesión</button>
+        } @else {
+          <p class="desc">Iniciá sesión para guardar tu red en la nube.</p>
+          <a routerLink="/bienvenida" class="btn-primary">Ir a bienvenida</a>
+        }
+      </section>
 
       <section class="card">
         <h2>Instalar Bonds</h2>
@@ -90,7 +109,7 @@ import { PwaService } from '../../core/services/pwa.service';
         <p class="desc">
           Visualiza, cuida y fortalece las relaciones importantes de tu vida antes de que el tiempo las erosione sin darte cuenta.
         </p>
-        <p class="version">v0.2 · PWA · Datos en este dispositivo</p>
+        <p class="version">v0.3 · PWA · Sync en la nube</p>
       </section>
     </section>
   `,
@@ -144,6 +163,8 @@ import { PwaService } from '../../core/services/pwa.service';
 
       &.ok { color: #6ee7b7; }
     }
+
+    .ok-line { color: #6ee7b7; }
 
     .platform-hint {
       margin-top: 0.75rem;
@@ -211,10 +232,13 @@ import { PwaService } from '../../core/services/pwa.service';
 })
 export class SettingsComponent {
   readonly pwa = inject(PwaService);
+  readonly auth = inject(AuthService);
+  readonly sync = inject(SyncService);
   readonly notifications = inject(NotificationService);
 
   notificationsEnabled = this.notifications.isEnabled();
   testingPush = false;
+  syncing = false;
 
   async install(): Promise<void> {
     await this.pwa.install();
@@ -245,5 +269,18 @@ export class SettingsComponent {
     } finally {
       this.testingPush = false;
     }
+  }
+
+  async syncNow(): Promise<void> {
+    this.syncing = true;
+    try {
+      await this.sync.pushToCloud();
+    } finally {
+      this.syncing = false;
+    }
+  }
+
+  logout(): void {
+    this.auth.logout();
   }
 }

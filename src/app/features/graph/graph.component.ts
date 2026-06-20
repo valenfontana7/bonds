@@ -54,12 +54,7 @@ interface GraphLink {
             cerca y quién necesita atención.
           </p>
           <div class="empty-actions">
-            <a routerLink="/personas/nueva" class="btn-primary"
-              >+ Agregar persona</a
-            >
-            <button type="button" class="btn-secondary" (click)="loadDemo()">
-              Ver demo
-            </button>
+            <a routerLink="/bienvenida" class="btn-primary">Empezar</a>
           </div>
         </div>
       } @else {
@@ -491,10 +486,6 @@ export class GraphComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
-  }
-
-  loadDemo(): void {
-    this.bonds.seedDemoData();
   }
 
   clearSelection(): void {
