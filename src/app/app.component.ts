@@ -15,7 +15,7 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
     <div class="app-shell">
       <app-pwa-prompts />
 
-      <main class="content">
+      <main class="content" [class.no-bottom-nav]="!showNav()">
         <router-outlet />
       </main>
 
@@ -95,6 +95,10 @@ import { PwaPromptsComponent } from './shared/pwa-prompts/pwa-prompts.component'
       overflow-y: auto;
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
+
+      &.no-bottom-nav {
+        padding-bottom: calc(var(--page-gutter) + var(--sab));
+      }
     }
 
     .bottom-nav {
@@ -256,10 +260,17 @@ export class AppComponent implements OnInit {
     () => this.bonds.upcomingBirthdays().filter((entry) => entry.daysUntil <= 1).length,
   );
 
-  readonly showNav = () =>
-    this.auth.isLoggedIn() &&
-    this.bonds.isOnboardingComplete() &&
-    !this.router.url.startsWith('/bienvenida');
+  readonly showNav = () => {
+    const path = this.router.url.split('?')[0];
+    if (path === '/personas/nueva' || /\/personas\/[^/]+\/editar$/.test(path)) {
+      return false;
+    }
+    return (
+      this.auth.isLoggedIn() &&
+      this.bonds.isOnboardingComplete() &&
+      !path.startsWith('/bienvenida')
+    );
+  };
 
   constructor() {
     effect(() => {

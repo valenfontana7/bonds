@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BondsService } from '../../core/services/bonds.service';
@@ -31,7 +31,7 @@ const MAX_PHOTO_BYTES = 500_000;
           <h1>{{ isEdit ? 'Editar persona' : 'Agregar persona' }}</h1>
         </header>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <form id="person-form" [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="photo-upload">
             @if (photoPreview) {
               <img [src]="photoPreview" alt="Vista previa" class="preview" />
@@ -154,24 +154,24 @@ const MAX_PHOTO_BYTES = 500_000;
             />
             <span class="hint">Opcional</span>
           </label>
-
-          <div class="actions">
-            <button type="submit" class="btn-primary" [disabled]="saving()">
-              {{
-                saving()
-                  ? 'Guardando…'
-                  : isEdit
-                    ? 'Guardar cambios'
-                    : 'Agregar persona'
-              }}
-            </button>
-            @if (isEdit) {
-              <button type="button" class="btn-danger" [disabled]="saving()" (click)="showDeleteConfirm.set(true)">
-                Eliminar
-              </button>
-            }
-          </div>
         </form>
+
+        <div class="form-actions-bar" [style.bottom.px]="actionsBarBottom()">
+          <button type="submit" form="person-form" class="btn-primary" [disabled]="saving()">
+            {{
+              saving()
+                ? 'Guardando…'
+                : isEdit
+                  ? 'Guardar cambios'
+                  : 'Agregar persona'
+            }}
+          </button>
+          @if (isEdit) {
+            <button type="button" class="btn-danger" [disabled]="saving()" (click)="showDeleteConfirm.set(true)">
+              Eliminar
+            </button>
+          }
+        </div>
 
         @if (showDeleteConfirm()) {
           <div class="confirm-backdrop" role="presentation" (click)="showDeleteConfirm.set(false)"></div>
@@ -194,6 +194,7 @@ const MAX_PHOTO_BYTES = 500_000;
       max-width: 480px;
       margin: 0 auto;
       position: relative;
+      padding-bottom: calc(9.5rem + var(--sab));
     }
 
     header {
@@ -235,6 +236,7 @@ const MAX_PHOTO_BYTES = 500_000;
       background: var(--surface);
       color: var(--text);
       font-size: 1rem;
+      scroll-margin-bottom: 10rem;
 
       &:focus {
         outline: none;
@@ -252,6 +254,7 @@ const MAX_PHOTO_BYTES = 500_000;
       font-family: inherit;
       resize: vertical;
       min-height: 4rem;
+      scroll-margin-bottom: 10rem;
 
       &:focus {
         outline: none;
@@ -330,11 +333,26 @@ const MAX_PHOTO_BYTES = 500_000;
       }
     }
 
-    .actions {
+    .form-actions-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 640px;
+      padding: 0.75rem var(--page-gutter) calc(0.75rem + var(--sab));
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      z-index: 102;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
+      gap: 0.5rem;
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+
+      .btn-primary,
+      .btn-danger {
+        width: 100%;
+      }
     }
 
     .not-found {
@@ -400,11 +418,14 @@ const MAX_PHOTO_BYTES = 500_000;
     }
   `,
 })
-export class PersonFormComponent {
+export class PersonFormComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly bonds = inject(BondsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+
+  readonly actionsBarBottom = signal(0);
+  private viewportCleanup?: () => void;
 
   isEdit = false;
   notFound = false;
@@ -474,6 +495,45 @@ export class PersonFormComponent {
         this.notFound = true;
       }
     }
+  }
+
+  ngOnInit(): void {
+    this.bindVisualViewport();
+    document.addEventListener('focusin', this.onFieldFocus);
+  }
+
+  ngOnDestroy(): void {
+    this.viewportCleanup?.();
+    document.removeEventListener('focusin', this.onFieldFocus);
+  }
+
+  private readonly onFieldFocus = (event: FocusEvent): void => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.matches('input, textarea, select')) return;
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  };
+
+  private bindVisualViewport(): void {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const update = (): void => {
+      const keyboardGap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      // Con teclado abierto, anclar la barra al borde visible (encima del teclado).
+      this.actionsBarBottom.set(keyboardGap > 80 ? keyboardGap : 0);
+    };
+
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    update();
+
+    this.viewportCleanup = () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
   }
 
   showError(controlName: string): boolean {
