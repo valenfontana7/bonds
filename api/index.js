@@ -1,8 +1,5 @@
-import { configureWebPush, getPublicAppUrl } from '../lib/push.js';
-import { isPersistentStoreReady } from '../lib/store.js';
+import { getPublicAppUrl } from '../lib/push.js';
 import { methodNotAllowed } from '../lib/http.js';
-
-configureWebPush(process.env);
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -12,8 +9,14 @@ export default async function handler(req, res) {
 
   const body = {
     ok: true,
-    pushReady: configureWebPush(process.env),
-    storeReady: isPersistentStoreReady(),
+    service: 'bonds-push',
+    endpoints: [
+      '/api/health',
+      '/api/push/vapid-public-key',
+      '/api/push/register',
+      '/api/push/snapshot',
+      '/api/push/test',
+    ],
     publicAppUrl: getPublicAppUrl(),
   };
 

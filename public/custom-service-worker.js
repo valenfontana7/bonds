@@ -1,4 +1,12 @@
 /// <reference lib="webworker" />
+
+self.addEventListener('fetch', (event) => {
+  const { pathname } = new URL(event.request.url);
+  if (pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+  }
+});
+
 importScripts('./ngsw-worker.js');
 
 const DB_NAME = 'bonds-notifications';

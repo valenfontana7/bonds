@@ -27,14 +27,21 @@ export class PushApiService {
   }
 
   async isServerReady(): Promise<boolean> {
-    if (!this.configured) return false;
+    const health = await this.getHealth();
+    if (!health) return false;
+    return health.pushReady && health.storeReady;
+  }
+
+  async getHealth(): Promise<{ pushReady: boolean; storeReady: boolean; publicAppUrl?: string } | null> {
+    if (!this.configured) return null;
     try {
-      const health = await firstValueFrom(
-        this.http.get<{ pushReady: boolean; storeReady?: boolean }>(this.apiUrl('/api/health')),
+      return await firstValueFrom(
+        this.http.get<{ pushReady: boolean; storeReady: boolean; publicAppUrl?: string }>(
+          this.apiUrl('/api/health'),
+        ),
       );
-      return health.pushReady && (health.storeReady ?? true);
     } catch {
-      return false;
+      return null;
     }
   }
 

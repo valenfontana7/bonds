@@ -44,6 +44,7 @@ export class NotificationService {
   );
   readonly pushActive = signal(false);
   readonly remotePushAvailable = signal(false);
+  readonly storeNotReady = signal(false);
   readonly iosNeedsInstall = signal(isIOS() && !this.detectStandalone());
 
   isEnabled(): boolean {
@@ -170,11 +171,19 @@ export class NotificationService {
   private async setupRemotePush(): Promise<void> {
     this.remotePushAvailable.set(false);
     this.pushActive.set(false);
+    this.storeNotReady.set(false);
 
     if (!this.pushSupported || !this.pushApi.configured) return;
-    if (!(await this.pushApi.isServerReady())) return;
+
+    const health = await this.pushApi.getHealth();
+    if (!health?.pushReady) return;
 
     this.remotePushAvailable.set(true);
+
+    if (!health.storeReady) {
+      this.storeNotReady.set(true);
+      return;
+    }
 
     const registration = await this.getRegistration();
     if (!registration) return;

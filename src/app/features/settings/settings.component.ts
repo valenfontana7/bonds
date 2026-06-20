@@ -68,6 +68,10 @@ import { PwaService } from '../../core/services/pwa.service';
               <button type="button" class="btn-secondary" [disabled]="testingPush" (click)="testPush()">
                 {{ testingPush ? 'Enviando…' : 'Probar notificación ahora' }}
               </button>
+            } @else if (notifications.storeNotReady()) {
+              <p class="desc platform-hint warn-line">
+                El API responde, pero falta Redis. En Vercel: Storage → Upstash for Redis → conectar al proyecto y redeploy.
+              </p>
             } @else if (notifications.remotePushAvailable()) {
               <p class="desc platform-hint warn-line">
                 Push remoto pendiente. Abrí Bonds instalada en HTTPS para completar la suscripción.
