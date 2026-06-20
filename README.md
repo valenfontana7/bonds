@@ -1,59 +1,108 @@
-# BondsApp
+# Bonds
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.27.
+PWA para cuidar tus relaciones. Los datos viven en el dispositivo; el servidor push solo guarda la suscripción y un resumen mínimo (nombres + días sin contacto) para enviar recordatorios diarios.
 
-## Development server
+## Deploy en Vercel (recomendado)
 
-To start a local development server, run:
+El repo ya incluye `vercel.json` y las funciones en `/api`. La PWA y el API push comparten el mismo dominio HTTPS.
 
-```bash
-ng serve
-```
+### 1. Upstash Redis (almacenamiento persistente)
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+En Vercel el filesystem es efímero; las suscripciones push se guardan en Redis.
 
-## Code scaffolding
+1. Entrá a [vercel.com](https://vercel.com) → tu proyecto **bonds**
+2. **Storage** → **Create Database** → **Upstash for Redis**
+3. Conectala al proyecto (Vercel agrega `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` solo)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### 2. Claves VAPID
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+En tu máquina:
 
 ```bash
-ng generate --help
+npm run server:vapid
 ```
 
-## Building
+Copiá `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (ej. `mailto:tu@email.com`).
 
-To build the project run:
+### 3. Variables de entorno en Vercel
+
+**Settings → Environment Variables** (Production):
+
+| Variable | Valor |
+|---|---|
+| `VAPID_PUBLIC_KEY` | de `npm run server:vapid` |
+| `VAPID_PRIVATE_KEY` | de `npm run server:vapid` |
+| `VAPID_SUBJECT` | `mailto:tu@email.com` |
+| `PUBLIC_APP_URL` | `https://tu-proyecto.vercel.app` |
+| `CRON_SECRET` | string aleatorio largo (ej. `openssl rand -hex 32`) |
+| `DEFAULT_DIGEST_HOUR` | `9` |
+| `UPSTASH_REDIS_REST_*` | las crea Vercel al conectar Upstash |
+
+`PUBLIC_APP_URL` debe ser la URL **final** con HTTPS (iconos en las notificaciones).
+
+### 4. Redeploy
 
 ```bash
-ng build
+git push
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+O **Deployments → Redeploy** en Vercel.
 
-## Running unit tests
+Build command: `npm run build`  
+Output: `dist/bonds-app/browser` (ya está en `vercel.json`)
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### 5. Verificar
+
+Abrí `https://tu-proyecto.vercel.app/api/health`. Deberías ver:
+
+```json
+{
+  "ok": true,
+  "pushReady": true,
+  "storeReady": true,
+  "publicAppUrl": "https://tu-proyecto.vercel.app"
+}
+```
+
+Si `storeReady` es `false`, falta conectar Upstash Redis.
+
+### 6. Activar push en el teléfono
+
+1. Abrí la URL de Vercel en el navegador
+2. **Instalá** la PWA (en iPhone: Safari → Compartir → Agregar a inicio)
+3. Abrí desde el ícono → **Ajustes** → activar recordatorios
+4. Tocá **Probar notificación ahora**
+
+El cron de Vercel llama `/api/cron/digest` cada 15 minutos y envía **como máximo un digest por día** por dispositivo.
+
+---
+
+## Desarrollo local (solo frontend)
 
 ```bash
-ng test
+npm start
 ```
 
-## Running end-to-end tests
+En modo dev el service worker está desactivado; push no aplica.
 
-For end-to-end (e2e) testing, run:
+## Push local (opcional)
 
 ```bash
-ng e2e
+npm run server:install
+npm run server:vapid   # → server/.env
+npm run build
+npm run server
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Scripts útiles
 
-## Additional Resources
+| Comando | Qué hace |
+|---|---|
+| `npm run build:pwa` | Build + servidor estático simple (sin push) |
+| `npm run server:dev` | Express local con recarga |
+| `npm run icons` | Regenerar íconos PWA |
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Privacidad
+
+- Personas, interacciones y notas: **solo en tu dispositivo**
+- Servidor / Redis: `deviceId`, suscripción Web Push, nombres en riesgo y días sin contacto

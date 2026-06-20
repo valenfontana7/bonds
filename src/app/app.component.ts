@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BondsService } from './core/services/bonds.service';
 import { NotificationService } from './core/services/notification.service';
@@ -99,17 +99,30 @@ export class AppComponent implements OnInit {
   private readonly bonds = inject(BondsService);
   private readonly notifications = inject(NotificationService);
 
+  constructor() {
+    effect(() => {
+      this.bonds.needsAttention();
+      void this.notifications.refreshSnapshot();
+    });
+  }
+
   ngOnInit(): void {
     this.bonds.seedDemoData();
     this.setupNotifications();
+    if (this.notifications.isEnabled()) {
+      void this.notifications.setEnabled(true);
+    }
   }
 
   private setupNotifications(): void {
     void this.notifications.syncBadgeAndNotify();
+    void this.notifications.registerPeriodicSync();
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         void this.notifications.syncBadgeAndNotify();
+      } else {
+        void this.notifications.requestBackgroundCheck();
       }
     });
   }

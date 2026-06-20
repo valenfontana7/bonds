@@ -38,10 +38,18 @@ import { PwaService } from '../../core/services/pwa.service';
             Las notificaciones están bloqueadas. Habilitalas en la configuración del navegador.
           </p>
         } @else {
+          @if (notifications.iosNeedsInstall() && !pwa.isStandalone()) {
+            <p class="desc warn">
+              En iPhone, instalá Bonds en la pantalla de inicio antes de activar recordatorios push.
+            </p>
+          }
+
           <label class="toggle-row">
             <div>
               <strong>Recordarme quién necesita atención</strong>
-              <span class="hint">Un aviso suave por día, máximo, cuando alguien de tu red lo pide.</span>
+              <span class="hint">
+                Un aviso por día, incluso con la app cerrada. Solo se sincronizan nombres y días sin contacto.
+              </span>
             </div>
             <input
               type="checkbox"
@@ -49,8 +57,26 @@ import { PwaService } from '../../core/services/pwa.service';
               (change)="toggleNotifications($event)"
             />
           </label>
+
           @if (notificationsEnabled) {
             <p class="status ok">Notificaciones activas</p>
+
+            @if (notifications.pushActive()) {
+              <p class="desc platform-hint ok-line">
+                Push remoto activo — funciona en Android e iPhone (iOS 16.4+) con la app instalada.
+              </p>
+              <button type="button" class="btn-secondary" [disabled]="testingPush" (click)="testPush()">
+                {{ testingPush ? 'Enviando…' : 'Probar notificación ahora' }}
+              </button>
+            } @else if (notifications.remotePushAvailable()) {
+              <p class="desc platform-hint warn-line">
+                Push remoto pendiente. Abrí Bonds instalada en HTTPS para completar la suscripción.
+              </p>
+            } @else {
+              <p class="desc platform-hint">
+                Modo local: el aviso llega al abrir o cerrar la app. Para push en iOS/Android configurá el servidor.
+              </p>
+            }
           }
         }
       </section>
@@ -60,7 +86,7 @@ import { PwaService } from '../../core/services/pwa.service';
         <p class="desc">
           Visualiza, cuida y fortalece las relaciones importantes de tu vida antes de que el tiempo las erosione sin darte cuenta.
         </p>
-        <p class="version">v0.1 · PWA · Datos en este dispositivo</p>
+        <p class="version">v0.2 · PWA · Datos en este dispositivo</p>
       </section>
     </section>
   `,
@@ -104,6 +130,7 @@ import { PwaService } from '../../core/services/pwa.service';
       line-height: 1.5;
 
       &.muted { margin: 0; }
+      &.warn { color: #fbbf24; }
       &:last-child { margin-bottom: 0; }
     }
 
@@ -112,6 +139,33 @@ import { PwaService } from '../../core/services/pwa.service';
       font-size: 0.85rem;
 
       &.ok { color: #6ee7b7; }
+    }
+
+    .platform-hint {
+      margin-top: 0.75rem;
+      margin-bottom: 0;
+      font-size: 0.78rem;
+      line-height: 1.45;
+
+      &.ok-line { color: #6ee7b7; }
+      &.warn-line { color: #fbbf24; }
+    }
+
+    .btn-secondary {
+      margin-top: 0.75rem;
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: rgba(99, 102, 241, 0.12);
+      color: #c7d2fe;
+      font-size: 0.85rem;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
     }
 
     .toggle-row {
@@ -156,22 +210,36 @@ export class SettingsComponent {
   readonly notifications = inject(NotificationService);
 
   notificationsEnabled = this.notifications.isEnabled();
+  testingPush = false;
 
   async install(): Promise<void> {
     await this.pwa.install();
   }
 
   async toggleNotifications(event: Event): Promise<void> {
-    const checked = (event.target as HTMLInputElement).checked;
+    const input = event.target as HTMLInputElement;
+    const checked = input.checked;
+
     if (checked) {
       const granted = await this.notifications.enableWithPermission();
       this.notificationsEnabled = granted;
       if (!granted) {
-        (event.target as HTMLInputElement).checked = false;
+        input.checked = false;
       }
     } else {
-      this.notifications.setEnabled(false);
+      await this.notifications.setEnabled(false);
       this.notificationsEnabled = false;
+    }
+  }
+
+  async testPush(): Promise<void> {
+    this.testingPush = true;
+    try {
+      await this.notifications.sendTestPush();
+    } catch {
+      // Silent — user sees no notification if it fails.
+    } finally {
+      this.testingPush = false;
     }
   }
 }

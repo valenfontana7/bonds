@@ -40,3 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Push server
+/server/node_modules
+/server/data
+/server/.env
